@@ -1,10 +1,12 @@
 const express = require('express');
+const path = require('path');
 
 const app = express();
 app.set('port', process.env.PORT || 3000); // 실행할 포트 설정. 
 
 app.get('/', (req, res) => { // get 요청이 들어올 때 어떤 동작을 할지 적는 부분
-    res.send('Hello, Express'); // get / 요청이 들어올 때 Hello, Express를 전송함
+    //res.send('Hello, Express'); // get / 요청이 들어올 때 Hello, Express를 전송함
+    res.sendFile(path.join(__dirname, '/index.html'));
 });
 
 app.listen(app.get('port'), () => {
