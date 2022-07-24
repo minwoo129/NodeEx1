@@ -51,7 +51,8 @@ router.get('/room/:id', async(req, res, next) => {
         const { rooms } = io.of('/chat').adapter;
         if(rooms && rooms[id] && (room.max <= rooms[id].length)) return res.redirect('/?error=허용인원을 초과했습니다.');
 
-        res.render('chat', { room, title: room.title, chats: [], user: req.session.color })
+        const chats = await Chat.find({ room: id }).sort('createdAt');
+        res.render('chat', { room, title: room.title, chats, user: req.session.color })
     } catch (error) {
         console.error(err);
         return next(err);
@@ -67,6 +68,23 @@ router.delete('/room/:id', async(req, res, next) => {
         setTimeout(() => {
             req.app.get('io').of('/room').emit('removeRoom', id);
         }, 2000);
+    } catch (err) {
+        console.error(err);
+        next(err);
+    }
+});
+
+router.post('/room/:id/chat', async (req, res, next) => {
+    const { id } = req.params
+    const { color } = req.session
+    try {
+        const chat = await Chat.create({
+            room: id,
+            user: color,
+            chat: req.body.chat
+        });
+        req.app.get('io').of('/chat').to(id).emit('chat', chat);
+        res.send('ok');
     } catch (err) {
         console.error(err);
         next(err);
