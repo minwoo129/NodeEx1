@@ -33,7 +33,7 @@ exports.verifyToken = (req, res, next) => {
     }
 }
 
-exports.apiLimiter = new RateLimit({
+exports.apiLimiter = RateLimit({
     windowMs: (60 * 1000), // 1분
     max: 10, // 허용 횟수
     handler(req, res) { // 제한 초과 시 콜백 함수
