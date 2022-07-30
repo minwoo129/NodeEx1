@@ -14,6 +14,7 @@ const postRouter = require('./routes/post');
 const userRouter = require('./routes/user');
 const { sequelize } = require('./models');
 const passportConfig = require('./passport');
+const logger = require('./logger');
 
 const app = express();
 passportConfig();
@@ -63,7 +64,8 @@ app.use('/user', userRouter);
 app.use((req, res, next) => {
     const error = new Error(`${req.method} ${req.url} 라우터가 없습니다.`);
     error.status = 404;
-    next(error);
+    logger.info('hello');
+    logger.error(error.message);
 });
 app.use((err, req, res, next) => {
     res.locals.message = err.message;
@@ -72,6 +74,4 @@ app.use((err, req, res, next) => {
     res.render('error');
 });
 
-app.listen(app.get('port'), () => {
-    console.log(app.get('port'), '번 포트에서 대기 중');
-});
+module.exports = app;
