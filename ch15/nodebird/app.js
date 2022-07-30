@@ -6,8 +6,16 @@ const session = require('express-session');
 const nunjucks = require('nunjucks');
 const dotenv = require('dotenv');
 const passport = require('passport');
+const helmet = require('helmet');
+const hpp = require('hpp');
+const redis = require('redis');
+const RedisStore = require('connect-redis')(session)
 
 dotenv.config();
+const redisClient = redis.createClient({
+    url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+    password: process.env.REDIS_PASSWORD
+})
 const pageRouter = require('./routes/page');
 const authRouter = require('./routes/auth');
 const postRouter = require('./routes/post');
@@ -32,7 +40,11 @@ sequelize.sync({ force: false })
     console.error(err);
 })
 
-if(process.env.NODE_ENV == 'production') app.use(morgan('combined'));
+if(process.env.NODE_ENV == 'production') {
+    app.use(morgan('combined'));
+    app.use(helmet({ contentSecurityPolicy: false }));
+    app.use(hpp());
+}
 else app.use(morgan('dev'))
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -47,7 +59,8 @@ const sessionOption = {
     cookie: {
         httpOnly: true,
         secure: false
-    }
+    },
+    store: new RedisStore({ client: redisClient })
 }
 if(process.env.NODE_ENV == 'production') sessionOption.proxy = true;
 app.use(session(sessionOption));
